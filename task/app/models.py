@@ -51,7 +51,9 @@ class Item(models.Model):
 
 
 class Comment(models.Model):
-    author = models.PositiveIntegerField(blank=True, null=True)
+    author_id = models.PositiveIntegerField(blank=True, null=True)
+    author_name = models.CharField(max_length=255,blank=True, null=True)
+    author_image = models.URLField(blank=True, null=True)
     item = models.ForeignKey(
         Item, on_delete=models.CASCADE, related_name='comments')
     body = models.TextField(blank=False, null=False)

@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Project, List, Item
-from .serializers import ProjectSerializer, ListSerializer, ItemSerializer
+from .models import Project, List, Item, Comment
+from .serializers import ProjectSerializer, ListSerializer, ItemSerializer, CommentSerializer
 
 
 @api_view(['POST'])
@@ -30,7 +30,7 @@ def projects_by_user(request,id):
         data = serializer.data
         return Response(data)
     else:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response([])
 
 
 @api_view(['GET'])
@@ -167,3 +167,48 @@ def update_item_order(request, id):
 
    except Item.DoesNotExist:
         return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def comments_by_item(request,id):
+    comments = Comment.objects.filter(item_id=id).order_by('-created_at')
+    if comments:
+        serializer = CommentSerializer(comments,many=True)
+        data = serializer.data
+        return Response(data)
+    else:
+        return Response([])
+
+
+@api_view(['POST'])
+def add_comment(request):
+    print(request.data)
+    comment = CommentSerializer(data=request.data)
+
+    if comment.is_valid():
+        comment.save()
+        return Response(comment.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(comment.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def update_comment(request, id):
+    try:
+        comment_obj = Comment.objects.get(pk=id)
+        comment_obj.body = request.data.get('body', '')
+        comment_obj.save()
+        serializer = CommentSerializer(comment_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Comment.DoesNotExist:
+        return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+def delete_comment(request, id):
+    try:
+        comment_obj = Comment.objects.get(pk=id)
+        comment_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Comment.DoesNotExist:
+        return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)

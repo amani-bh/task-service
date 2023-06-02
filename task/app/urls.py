@@ -13,4 +13,8 @@ urlpatterns = [
     path("update_item_description/<int:id>", views.update_item_description),
     path("update_item_order/<int:id>", views.update_item_order),
     path("update_list_order/<int:id>", views.update_list_order),
+    path("comments_by_item/<int:id>", views.comments_by_item),
+    path("add_comment", views.add_comment),
+    path("update_comment/<int:id>", views.update_comment),
+    path("delete_comment/<int:id>", views.delete_comment),
 ]
