@@ -1,7 +1,13 @@
+import uuid
+
+from django.core.mail import send_mail
 from django.db.models import Max
 from django.shortcuts import render
 
 # Create your views here.
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -212,3 +218,60 @@ def delete_comment(request, id):
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Comment.DoesNotExist:
         return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def invite_member(request, id):
+    try:
+        project = Project.objects.get(pk=id)
+        email = request.data.get('email', '')
+        owner_name= request.data.get('name', '')
+        receiver_id= request.data.get('receiver_id', '')
+        if receiver_id in project.members:
+             return Response({'error': 'Member already exist'}, status=status.HTTP_404_NOT_FOUND)
+        uidb64 = urlsafe_base64_encode(force_bytes(project.pk))
+        activate_url = reverse('join', kwargs={'uidb64': uidb64, 'id': receiver_id})
+        activate_url = request.build_absolute_uri(activate_url)
+        subject = f'{owner_name} has invited you to join {project.title}'
+        message = (f'Click on the following link to accept: {activate_url}')
+        to_email = email
+        send_mail(subject, message, from_email=None,
+                          recipient_list=[to_email])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def join_member(request, uidb64,id):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        project = Project.objects.get(id=uid)
+    except (TypeError, ValueError, OverflowError, Project.DoesNotExist):
+        project = None
+
+    if project :
+        if project.members is None:
+            project.members=[]
+        project.members.append(id)
+        project.save()
+        return Response({'message': 'Join successful!'}, status=status.HTTP_200_OK)
+
+    return Response({'message': 'Join link is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def assign_to_item(request,id,idUser):
+    try:
+        item = Item.objects.get(id=id)
+    except Item.DoesNotExist:
+        return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if item:
+        item.assigned_to=idUser
+        item.save()
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    return Response({'message': 'J invalid!'}, status=status.HTTP_400_BAD_REQUEST)

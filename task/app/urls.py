@@ -17,4 +17,7 @@ urlpatterns = [
     path("add_comment", views.add_comment),
     path("update_comment/<int:id>", views.update_comment),
     path("delete_comment/<int:id>", views.delete_comment),
+    path("invite_member/<int:id>", views.invite_member),
+    path('join/<uidb64>/<id>/', views.join_member, name='join'),
+    path('assign_to_item/<int:id>/<int:idUser>/', views.assign_to_item),
 ]

@@ -35,7 +35,6 @@
     <open-files>
       <object connection-id="f59a42f3-6a5a-4d1a-ac26-0d339814c162" object-ref="schemas/public/tables/app_item" />
       <object connection-id="f59a42f3-6a5a-4d1a-ac26-0d339814c162" object-ref="schemas/public/tables/app_project" />
-      <object connection-id="f59a42f3-6a5a-4d1a-ac26-0d339814c162" object-ref="schemas/public/tables/app_comment" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
