@@ -279,3 +279,13 @@ def date_item(request,id):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     return Response({'message': 'date invalid!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+def delete_item(request, item_id):
+    try:
+        item = Item.objects.get(id=item_id)
+        item.delete()
+        return Response({'message': 'deleted'},status=204)
+    except Item.DoesNotExist:
+        return Response({'message': 'Item not found!'},status=404)
