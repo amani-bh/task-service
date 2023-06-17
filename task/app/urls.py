@@ -20,4 +20,5 @@ urlpatterns = [
     path("invite_member/<int:id>", views.invite_member),
     path('join/<uidb64>/<id>/', views.join_member, name='join'),
     path('assign_to_item/<int:id>/<int:idUser>/', views.assign_to_item),
+    path('date_item/<int:id>', views.date_item),
 ]

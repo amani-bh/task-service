@@ -1,7 +1,8 @@
 import uuid
+from datetime import datetime
 
 from django.core.mail import send_mail
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.shortcuts import render
 
 # Create your views here.
@@ -30,7 +31,7 @@ def add_project(request):
 
 @api_view(['GET'])
 def projects_by_user(request,id):
-    projects = Project.objects.filter(owner=id).order_by('-created_at')
+    projects = Project.objects.filter(Q(owner=id) | Q(members__contains=[id])).order_by('-created_at')
     if projects:
         serializer = ProjectSerializer(projects, many=True)
         data = serializer.data
@@ -48,19 +49,6 @@ def project_by_id(request,id):
         return Response(data)
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['POST'])
-def add_list111(request):
-    print(request)
-    list_data = request.data.get('list', {})
-    list = ListSerializer(data=list_data)
-
-    if list.is_valid():
-        list.save()
-        return Response(list.data, status=status.HTTP_201_CREATED)
-    else:
-        return Response(list.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -275,3 +263,19 @@ def assign_to_item(request,id,idUser):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     return Response({'message': 'J invalid!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def date_item(request,id):
+    try:
+        item = Item.objects.get(id=id)
+    except Item.DoesNotExist:
+        return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if item:
+        item.due_date=datetime.fromisoformat(request.data['date'])
+        item.save()
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    return Response({'message': 'date invalid!'}, status=status.HTTP_400_BAD_REQUEST)
