@@ -22,4 +22,5 @@ urlpatterns = [
     path('assign_to_item/<int:id>/<int:idUser>/', views.assign_to_item),
     path('date_item/<int:id>', views.date_item),
     path('delete_item/<int:item_id>/', views.delete_item, name='delete_item'),
+    path('all_projects', views.all_projects, name='all_projects'),
 ]

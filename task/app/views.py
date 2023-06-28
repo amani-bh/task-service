@@ -291,3 +291,14 @@ def delete_item(request, item_id):
         return Response({'message': 'deleted'},status=204)
     except Item.DoesNotExist:
         return Response({'message': 'Item not found!'},status=404)
+
+
+@api_view(['GET'])
+def all_projects(request):
+    projects = Project.objects.filter().order_by('-created_at')
+    if projects:
+        serializer = ProjectSerializer(projects, many=True)
+        data = serializer.data
+        return Response(data)
+    else:
+        return Response([])
