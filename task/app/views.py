@@ -218,10 +218,9 @@ def invite_member(request, id):
         if receiver_id in project.members:
              return Response({'error': 'Member already exist'}, status=status.HTTP_404_NOT_FOUND)
         uidb64 = urlsafe_base64_encode(force_bytes(project.pk))
-        activate_url = reverse('join', kwargs={'uidb64': uidb64, 'id': receiver_id})
-        activate_url = request.build_absolute_uri(activate_url)
+        join_url = f"http://localhost:3001/join/{uidb64}/{receiver_id}"
         subject = f'{owner_name} has invited you to join {project.title}'
-        message = (f'Click on the following link to accept: {activate_url}')
+        message = (f'Click on the following link to accept: {join_url}')
         to_email = email
         send_mail(subject, message, from_email=None,
                           recipient_list=[to_email])
@@ -242,9 +241,12 @@ def join_member(request, uidb64,id):
     if project :
         if project.members is None:
             project.members=[]
-        project.members.append(id)
-        project.save()
-        return Response({'message': 'Join successful!'}, status=status.HTTP_200_OK)
+        if id not in project.members:
+            project.members.append(id)
+            project.save()
+            return Response({'message': 'Join successful!'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Member already exists!'}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'message': 'Join link is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
 
